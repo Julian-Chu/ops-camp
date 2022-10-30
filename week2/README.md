@@ -124,3 +124,52 @@ WORKDIR /root/
 COPY --from=0 /go/src/github.com/alexellis/href-counter/app ./
 CMD ["./app"]
 ```
+
+## 基于 docker 实现对容器的 CPU 和内存的资源限制
+### 內存
+`docker run -it --rm --name ju-1 -d alexeiled/stress-ng  --vm-bytes 256M`
+
+```shell
+>> docker stats
+CONTAINER ID   NAME      CPU %     MEM USAGE / LIMIT     MEM %     NET I/O     BLOCK I/O   PIDS
+1c0effc6ec3a   ju-1      100.14%   259.2MiB / 15.59GiB   1.62%     946B / 0B   0B / 0B     3
+
+
+>> cat /sys/fs/cgroup/system.slice/docker-1c0effc6ec3aaebf5f9cb76a058f763f31abbaef47ce3289cc29e8f7ff109513.scope/memory.max
+max
+```
+
+`docker run -it --rm --name ju-2 -m 512 -d alexeiled/stress-ng -vm-bytes 256M`
+```shell
+>> docker stats
+CONTAINER ID   NAME      CPU %     MEM USAGE / LIMIT   MEM %     NET I/O     BLOCK I/O   PIDS
+4c9027bb9556   ju-2      99.89%    259.2MiB / 512MiB   50.63%    876B / 0B   0B / 0B     3
+
+
+>> cat /sys/fs/cgroup/system.slice/docker-4c9027bb9556aab93b00599c1dd3a324b956799fcfb35d18b48f14f6ba3451e7.scope/memory.max
+536870912
+```
+
+### CPU
+`--cpu-shares`
+```
+>> docker run -it --rm --name ju-c1 --cpu-shares 1000 -d alexeiled/stress-ng --cpu 4 --vm 4
+>> docker run -it --rm --name ju-c2 --cpu-shares 500 -d alexeiled/stress-ng --cpu 4 --vm 4
+>> docker stats
+
+CONTAINER ID   NAME      CPU %     MEM USAGE / LIMIT     MEM %     NET I/O     BLOCK I/O   PIDS
+7402362fa51f   ju-c2     129.12%   273.4MiB / 15.59GiB   1.71%     656B / 0B   0B / 0B     13
+9439f77cb8bb   ju-c1     269.12%   273.4MiB / 15.59GiB   1.71%     946B / 0B   0B / 0B     13
+
+```
+
+`--cpus`
+```
+>> docker run -it --rm --name ju-c1 --cpus 2 -d alexeiled/stress-ng --cpu 4 --vm 4
+
+>> cat /sys/fs/cgroup/system.slice/docker-a756106630e9079f4df1c60d0a302bad43408290122cb70d32189b6b7a210753.scope/cpu.max
+200000 100000
+```
+
+### 部署 http 协议的 harbor 镜像仓库
+todo
