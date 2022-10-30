@@ -1,8 +1,6 @@
 FROM ubuntu:22.04
-MAINTAINER "jack 2973707860@qq.com"
 LABEL MAINTAINER="Julian Chu" VERSION="0.0"
-#ADD sources.list /etc/apt/sources.list
-
+ENV FLAG1="1" FLAG2="2"
 RUN apt update && apt  install -y iproute2  ntpdate  tcpdump telnet traceroute nfs-kernel-server nfs-common  lrzsz tree  openssl libssl-dev libpcre3 libpcre3-dev zlib1g-dev ntpdate tcpdump telnet traceroute  gcc openssh-server lrzsz tree  openssl libssl-dev libpcre3 libpcre3-dev zlib1g-dev ntpdate tcpdump telnet traceroute iotop unzip zip make
 
 ADD nginx-1.22.1.tar.gz /usr/local/src/
@@ -16,4 +14,5 @@ EXPOSE 80 443
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod a+x /docker-entrypoint.sh
+# ENTRYPOINT ["/apps/nginx/sbin/nginx","-g","daemon off;"]
 ENTRYPOINT ["/docker-entrypoint.sh"]
